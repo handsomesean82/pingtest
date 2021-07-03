@@ -1,13 +1,20 @@
 package sean.pingftpserver.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.InetAddress;
+import java.net.Socket;
 
 @RestController
 public class MyController {
 
-
+    Logger logger = LoggerFactory.getLogger(getClass());
     @GetMapping("/ping")
     @ResponseBody
     public String HelloWorld(@RequestParam String ipAddress){
@@ -22,8 +29,40 @@ public class MyController {
         }catch (Exception e){
 
         }
-        return "HelloWorld";
+        return "Hello Ping";
     }
+
+
+    @GetMapping("/telnet")
+    @ResponseBody
+    public String Telnet(@RequestParam String ipAddress, @RequestParam int port){
+        try{
+            Socket pingSocket = null;
+            PrintWriter out = null;
+            BufferedReader in = null;
+
+            try {
+                pingSocket = new Socket(ipAddress, port);
+                out = new PrintWriter(pingSocket.getOutputStream(), true);
+                in = new BufferedReader(new InputStreamReader(pingSocket.getInputStream()));
+            } catch (IOException e) {
+                logger.error("error telnet to " + ipAddress + " " + port + " with error: " + e.getMessage());
+                e.printStackTrace();
+            }
+
+            out.println("ping");
+            System.out.println(in.readLine());
+            out.close();
+            in.close();
+            pingSocket.close();
+        }catch (Exception e){
+
+        }
+        return "Hello Telnet";
+    }
+
+
+
 }
 
 

@@ -51,6 +51,7 @@ public class MyController {
             }
 
             out.println("ping");
+            logger.info("telnet to " + ipAddress + " port: " + port);
             System.out.println(in.readLine());
             out.close();
             in.close();

@@ -1,13 +1,12 @@
 package sean.pingftpserver.controller;
 
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 
@@ -60,6 +59,54 @@ public class MyController {
 
         }
         return "Hello Telnet";
+    }
+
+    @GetMapping("/ftp")
+    @ResponseBody
+    public String Ftp(@RequestParam String ipAddress, @RequestParam int port, @RequestParam String user, @RequestParam String password, @RequestParam String remoteFile, @RequestParam String localFile){
+        FTPClient ftpClient = new FTPClient();
+        try {
+            ftpClient.connect(ipAddress, port);
+            boolean login = ftpClient.login(user, password);
+            if(login)
+                logger.info("login successfully");
+            else {
+                logger.error("login failed");
+                return "FTP login failed";
+            }
+            /*boolean remotePassive =*/ ftpClient.enterLocalPassiveMode();
+            /*if(remotePassive)
+                logger.info("Remote passive mode entered");
+            else {
+                logger.error("Failed to enter remote passive mode");
+                return "error entering remote passive mode";
+            }*/
+            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+            File downloadFile = new File(localFile);
+            OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(downloadFile));
+            boolean success = ftpClient.retrieveFile(remoteFile, outputStream);
+            outputStream.close();
+
+            if(success){
+                logger.info("File " + remoteFile + " has been downloaded to local " + localFile);
+            }else{
+                logger.error("Failed to download file");
+            }
+        }catch (Exception e){
+            logger.error("Error: " + e.getMessage());
+            e.printStackTrace();
+        }finally {
+            try {
+                if (ftpClient.isConnected()) {
+                    ftpClient.logout();
+                    ftpClient.disconnect();
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        return "Hello FTP";
     }
 
 

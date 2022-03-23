@@ -30,6 +30,7 @@ public class MyController {
 
         }
         return "Hello Ping";
+
     }
 
 
@@ -113,5 +114,6 @@ public class MyController {
 
 
 }
+
 
 
